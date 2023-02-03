@@ -3,6 +3,8 @@ from . import constants as c
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
+
 
 def __prompt_email_password():
   u = input("Email: ")
@@ -31,13 +33,16 @@ def login(driver, email=None, password=None, cookie = None, timeout=10):
   password_elem.submit()
 
   try:
-    if driver.url == 'https://www.linkedin.com/checkpoint/lg/login-submit':
+    if driver.current_url == 'https://www.linkedin.com/checkpoint/lg/login-submit':
       remember = driver.find_element(By.ID,c.REMEMBER_PROMPT)
       if remember:
         remember.submit()
 
     element = WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.ID, c.VERIFY_LOGIN_ID)))
-  except: pass
+  except TimeoutException as e:
+    raise(f'Error: Failed login: {e}')
+  except Exception as e:
+    raise(e)
 
 def _login_with_cookie(driver, cookie):
   driver.get("https://www.linkedin.com/uas/login")
